@@ -1,0 +1,12 @@
+⚠️ IMPORTANT LEGAL NOTICE:
+This file contains C# models generated from CargoWise XSD schemas.
+The library maintainer is an authorized CargoWise user with schema access via EDI Messaging.
+
+TO USE THIS LIBRARY:
+- You MUST be an authorized CargoWise User or Affiliated Partner
+- Having these models does NOT grant you permission to use CargoWise systems
+- You MUST comply with all terms of your CargoWise user agreement
+- XSD schemas are available to authorized users via CargoWise EDI Messaging
+- See LEGAL.md for complete legal information
+
+CargoWise® is a registered trademark of WiseTech Global Limited.

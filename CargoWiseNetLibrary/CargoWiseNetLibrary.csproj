@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <!-- Package Information -->
+    <PackageId>CargoWiseNetLibrary</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Chizaruu</Authors>
+    <Description>A comprehensive .NET library for CargoWise EDI integration, including C# models
+      generated from CargoWise XSD schemas. The library maintainer is an authorized CargoWise user
+      with schema access via EDI Messaging. IMPORTANT: You MUST be an authorized CargoWise User or
+      Affiliated Partner to use this library. Having these models does NOT grant you permission to
+      use CargoWise systems.</Description>
+    <PackageTags>CargoWise;EDI;XML;Integration;Logistics;Freight;WiseTech</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Chizaruu/CargoWiseNetLibrary</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Chizaruu/CargoWiseNetLibrary</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Copyright>Copyright 2025 Chizaruu. CargoWise® is a registered trademark of
+      WiseTech Global Limited.</Copyright>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+    <!-- Legal Notices -->
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\LEGAL.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

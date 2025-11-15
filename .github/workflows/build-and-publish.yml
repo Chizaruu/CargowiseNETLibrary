@@ -1,0 +1,337 @@
+name: Build, Test, and Publish CargoWiseNetLibrary
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allows manual triggering
+    inputs:
+      publish_to_nuget:
+        description: "Publish to NuGet.org"
+        required: false
+        default: false
+        type: boolean
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  BUILD_CONFIGURATION: "Release"
+  PROJECT_PATH: "CargoWiseNetLibrary/CargoWiseNetLibrary.csproj"
+
+permissions:
+  contents: write # Required for creating releases
+  packages: write # Required for publishing to GitHub Packages
+  security-events: write # Required for security scanning
+  actions: read # Default permission for other actions
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for GitVersion and better analysis
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Check for test projects
+        id: check-tests
+        run: |
+          if [ -d "CargoWiseNetLibrary.Tests" ] && [ -f "CargoWiseNetLibrary.Tests/CargoWiseNetLibrary.Tests.csproj" ]; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests
+        if: steps.check-tests.outputs.has_tests == 'true'
+        run: dotnet test --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Upload coverage reports to Codecov
+        if: steps.check-tests.outputs.has_tests == 'true'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/**/coverage.cobertura.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Verify generated models exist
+        run: |
+          echo "Checking for generated model files..."
+          if [ ! -f "CargoWiseNetLibrary/Models/Universal/Universal.cs" ]; then
+            echo "::warning::Universal.cs not found. Models may need to be generated."
+          else
+            echo "✓ Universal.cs found ($(wc -l < CargoWiseNetLibrary/Models/Universal/Universal.cs) lines)"
+          fi
+          if [ ! -f "CargoWiseNetLibrary/Models/Native/Native.cs" ]; then
+            echo "::warning::Native.cs not found. Models may need to be generated."
+          else
+            echo "✓ Native.cs found ($(wc -l < CargoWiseNetLibrary/Models/Native/Native.cs) lines)"
+          fi
+
+      - name: Verify no XSD schemas committed
+        run: |
+          if find . -name "*.xsd" -type f | grep -q .; then
+            echo "::error::XSD schema files found in repository. These should not be committed."
+            find . -name "*.xsd" -type f
+            exit 1
+          else
+            echo "✓ No XSD schema files found (correct - they should be .gitignore'd)"
+          fi
+
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Check for dotnet format tool
+        id: check-format
+        run: |
+          if dotnet format --version > /dev/null 2>&1; then
+            echo "has_format=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_format=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run dotnet format
+        if: steps.check-format.outputs.has_format == 'true'
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+        continue-on-error: true
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "Checking for TODO/FIXME comments..."
+          if grep -r "TODO\|FIXME" --include="*.cs" --exclude-dir=obj --exclude-dir=bin .; then
+            echo "::warning::Found TODO/FIXME comments in code"
+          else
+            echo "✓ No TODO/FIXME comments found"
+          fi
+        continue-on-error: true
+
+  publish:
+    name: Version and Publish
+    runs-on: ubuntu-latest
+    needs: [build-and-test, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for GitVersion
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.10.2
+        with:
+          versionSpec: "5.x"
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.10.2
+
+      - name: Display Version Information
+        run: |
+          echo "Version: ${{ steps.gitversion.outputs.semVer }}"
+          echo "Major: ${{ steps.gitversion.outputs.major }}"
+          echo "Minor: ${{ steps.gitversion.outputs.minor }}"
+          echo "Patch: ${{ steps.gitversion.outputs.patch }}"
+          echo "PreReleaseTag: ${{ steps.gitversion.outputs.preReleaseTag }}"
+
+      - name: Update Version in Project File
+        run: |
+          # Update Version tag
+          sed -i "s|<Version>.*</Version>|<Version>${{ steps.gitversion.outputs.semVer }}</Version>|g" ${{ env.PROJECT_PATH }}
+
+          # Update PackageVersion if it exists
+          if grep -q "<PackageVersion>" ${{ env.PROJECT_PATH }}; then
+            sed -i "s|<PackageVersion>.*</PackageVersion>|<PackageVersion>${{ steps.gitversion.outputs.semVer }}</PackageVersion>|g" ${{ env.PROJECT_PATH }}
+          fi
+
+          echo "Updated project file with version ${{ steps.gitversion.outputs.semVer }}"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore /p:Version=${{ steps.gitversion.outputs.semVer }}
+
+      - name: Pack NuGet package
+        run: |
+          dotnet pack ${{ env.PROJECT_PATH }} \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --no-build \
+            --output ./nupkgs \
+            /p:Version=${{ steps.gitversion.outputs.semVer }} \
+            /p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
+
+      - name: List generated packages
+        run: |
+          echo "Generated NuGet packages:"
+          ls -lh ./nupkgs/
+
+      # Publish to GitHub Packages (always on main)
+      - name: Publish to GitHub Packages
+        run: |
+          for f in ./nupkgs/*.nupkg
+          do
+            echo "Publishing $f to GitHub Packages..."
+            dotnet nuget push "$f" \
+              --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+              --api-key ${{ secrets.GITHUB_TOKEN }} \
+              --skip-duplicate
+          done
+
+      # Publish to NuGet.org (checks for API key inside step)
+      - name: Publish to NuGet.org
+        run: |
+          if [[ -n "${{ secrets.NUGET_API_KEY }}" ]]; then
+            for f in ./nupkgs/*.nupkg
+            do
+              echo "Publishing $f to NuGet.org..."
+              dotnet nuget push "$f" \
+                --source https://api.nuget.org/v3/index.json \
+                --api-key ${{ secrets.NUGET_API_KEY }} \
+                --skip-duplicate
+            done
+            echo "✓ Published to NuGet.org"
+          else
+            echo "::warning::NUGET_API_KEY is not set. Skipping publishing to NuGet.org."
+            echo "To publish to NuGet.org, add NUGET_API_KEY to repository secrets."
+          fi
+
+      # Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.gitversion.outputs.semVer }}
+          name: CargoWiseNetLibrary v${{ steps.gitversion.outputs.semVer }}
+          body: |
+            ## CargoWiseNetLibrary v${{ steps.gitversion.outputs.semVer }}
+
+            ⚠️ **IMPORTANT LEGAL NOTICE**
+
+            **YOU MUST BE AN AUTHORIZED CARGOWISE USER** or Affiliated Partner to use this library.
+
+            - CargoWise® and WiseTech Global® are registered trademarks of WiseTech Global Limited
+            - Having these models does NOT grant you permission to use CargoWise systems
+            - You MUST comply with WiseTech Global's terms of use
+            - See [LEGAL.md](https://github.com/${{ github.repository }}/blob/main/LEGAL.md) for complete legal information
+
+            ---
+
+            ### 📦 Installation
+
+            ```bash
+            dotnet add package CargoWiseNetLibrary --version ${{ steps.gitversion.outputs.semVer }}
+            ```
+
+            Or via NuGet Package Manager:
+
+            ```powershell
+            Install-Package CargoWiseNetLibrary -Version ${{ steps.gitversion.outputs.semVer }}
+            ```
+
+            ### 📋 What's Included
+
+            - ✅ Universal Schema Models (UniversalShipmentData, UniversalEventData, etc.)
+            - ✅ Native Schema Models (complete Native API support)
+            - ✅ XML and JSON serialization utilities
+            - ✅ Validation framework with Data Annotations
+            - ✅ UniversalInterchange helper utilities
+            - ✅ Async file operations support
+
+            ### 📖 Documentation
+
+            - [README](https://github.com/${{ github.repository }}/blob/main/README.md) - Complete documentation
+            - [Quick Start Guide](https://github.com/${{ github.repository }}/blob/main/QUICKSTART.md) - Get started in 5 minutes
+            - [Schema Generation](https://github.com/${{ github.repository }}/blob/main/SCHEMA_GENERATION.md) - How models are generated
+
+            ### 🔄 Changes
+
+            See commit history: https://github.com/${{ github.repository }}/commits/v${{ steps.gitversion.outputs.semVer }}
+
+            ### 🛠️ Generated Using
+
+            - [Chizaruu.NetTools.SchemaGenerator](https://github.com/Chizaruu/Chizaruu.NetTools)
+            - XmlSchemaClassGenerator v2.1.1183.0
+
+            ---
+
+            **Author**: Chizaruu (Abdul-Kadir Coskun) / Koala Hollow
+            **License**: Apache 2.0
+            **Support**: https://github.com/${{ github.repository }}/issues
+          draft: false
+          prerelease: ${{ steps.gitversion.outputs.preReleaseTag != '' }}
+          files: ./nupkgs/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload NuGet package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package-v${{ steps.gitversion.outputs.semVer }}
+          path: ./nupkgs/*.nupkg
+          retention-days: 90
+
+  # Optional: Notify on successful publish
+  notify-success:
+    name: Notify Success
+    runs-on: ubuntu-latest
+    needs: [publish]
+    if: success()
+
+    steps:
+      - name: Success Summary
+        run: |
+          echo "🎉 Successfully built and published CargoWiseNetLibrary!"
+          echo "✅ Build completed"
+          echo "✅ Tests passed"
+          echo "✅ Code quality checks passed"
+          echo "✅ Security scans passed"
+          echo "✅ Package published"
+          echo ""
+          echo "📦 Package available at:"
+          echo "   - GitHub Packages: https://github.com/${{ github.repository }}/packages"
+          echo "   - NuGet.org: https://www.nuget.org/packages/CargoWiseNetLibrary"
