@@ -44,7 +44,10 @@ var shipment = new UniversalShipmentData
         {
             EnterpriseID = "YOUR_ENT_ID",
             ServerID = "YOUR_SERVER",
-            CompanyCode = "YOUR_COMPANY"
+            Company = new Company
+            {
+                Code = "TEST_COMPANY"
+            }
         },
         OrderNumber = "ORDER-2025-001",
         // Add other shipment properties as needed
@@ -472,7 +475,10 @@ var shipment = new UniversalShipmentData
         {
             EnterpriseID = "YOUR_ENT_ID",
             ServerID = "YOUR_SERVER",
-            CompanyCode = "YOUR_COMPANY"
+            Company = new Company
+            {
+                Code = "TEST_COMPANY"
+            }
         },
         OrderNumber = "ORDER-2025-001"
     }

@@ -375,7 +375,7 @@ namespace CargoWiseNetLibrary.Models.Universal
     {
         public string GetDisplayName()
         {
-            return $"{Shipment?.OrderNumber} - {Shipment?.DataContext?.CompanyCode}";
+            return $"{Shipment?.OrderNumber} - {Shipment?.DataContext?.Company.Code}";
         }
     }
 }

@@ -438,7 +438,7 @@ namespace CargoWiseNetLibrary.Models.Universal
         /// </summary>
         public string GetDisplayName()
         {
-            return $"{Shipment?.OrderNumber} - {Shipment?.DataContext?.CompanyCode}";
+            return $"{Shipment?.OrderNumber} - {Shipment?.DataContext?.Company?.Code}";
         }
 
         /// <summary>
@@ -447,7 +447,7 @@ namespace CargoWiseNetLibrary.Models.Universal
         public bool HasValidContext()
         {
             return Shipment?.DataContext != null
-                && !string.IsNullOrEmpty(Shipment.DataContext.CompanyCode);
+                && !string.IsNullOrEmpty(Shipment.DataContext.Company?.Code);
         }
     }
 }
@@ -470,7 +470,7 @@ namespace CargoWiseNetLibrary.Extensions
         public static string GetDisplayName(this UniversalShipmentData shipment)
         {
             ArgumentNullException.ThrowIfNull(shipment);
-            return $"{shipment.Shipment?.OrderNumber} - {shipment.Shipment?.DataContext?.CompanyCode}";
+            return $"{shipment.Shipment?.OrderNumber} - {shipment.Shipment?.DataContext?.Company?.Code}";
         }
     }
 }
@@ -619,7 +619,10 @@ public void Serialize_ValidShipment_ReturnsXmlString()
         {
             DataContext = new DataContext
             {
-                CompanyCode = "TEST",
+                Company = new Company
+                {
+                    Code = "TEST_COMPANY"
+                }
                 EnterpriseID = "TEST_ENT"
             }
         }
@@ -642,7 +645,9 @@ public void Deserialize_ValidXml_ReturnsShipment()
 <UniversalShipment xmlns=""http://www.cargowise.com/Schemas/Universal/2011/11"">
   <Shipment>
     <DataContext>
-      <CompanyCode>TEST</CompanyCode>
+      <Company>
+        <Code>TEST_COMPANY</Code>
+      </Company>
     </DataContext>
   </Shipment>
 </UniversalShipment>";
@@ -653,7 +658,7 @@ public void Deserialize_ValidXml_ReturnsShipment()
     // Assert
     Assert.NotNull(result);
     Assert.NotNull(result.Shipment);
-    Assert.Equal("TEST", result.Shipment.DataContext?.CompanyCode);
+    Assert.Equal("TEST_COMPANY", result.Shipment.DataContext?.Company.Code);
 }
 ```
 
