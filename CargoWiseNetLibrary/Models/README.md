@@ -235,11 +235,12 @@ public Nullable<Action> Action
 
    ```bash
    # Check generated files exist
-   dir Models\Universal\Universal.cs
-   dir Models\Native\Native.cs
+   dir Models\Universal.cs
+   dir Models\Native.cs
 
    # Verify legal headers are present
-   head -n 30 Models/Universal/Universal.cs
+   head -n 30 Models/Universal.cs
+   head -n 30 Models/Native.cs
 
    # Check for compilation errors
    dotnet build

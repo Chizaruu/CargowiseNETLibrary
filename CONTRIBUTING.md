@@ -576,8 +576,8 @@ namespace CargoWiseNetLibrary.Wrappers
 
    ```bash
    # Check files exist
-   ls CargoWiseNetLibrary/Models/Universal/Universal.cs
-   ls CargoWiseNetLibrary/Models/Native/Native.cs
+   ls CargoWiseNetLibrary/Models/Universal.cs
+   ls CargoWiseNetLibrary/Models/Native.cs
 
    # Build to check for errors
    dotnet build

@@ -79,15 +79,15 @@ jobs:
       - name: Verify generated models exist
         run: |
           echo "Checking for generated model files..."
-          if [ ! -f "CargoWiseNetLibrary/Models/Universal/Universal.cs" ]; then
+          if [ ! -f "CargoWiseNetLibrary/Models/Universal.cs" ]; then
             echo "::warning::Universal.cs not found. Models may need to be generated."
           else
-            echo "✓ Universal.cs found ($(wc -l < CargoWiseNetLibrary/Models/Universal/Universal.cs) lines)"
+            echo "✓ Universal.cs found ($(wc -l < CargoWiseNetLibrary/Models/Universal.cs) lines)"
           fi
-          if [ ! -f "CargoWiseNetLibrary/Models/Native/Native.cs" ]; then
+          if [ ! -f "CargoWiseNetLibrary/Models/Native.cs" ]; then
             echo "::warning::Native.cs not found. Models may need to be generated."
           else
-            echo "✓ Native.cs found ($(wc -l < CargoWiseNetLibrary/Models/Native/Native.cs) lines)"
+            echo "✓ Native.cs found ($(wc -l < CargoWiseNetLibrary/Models/Native.cs) lines)"
           fi
 
       - name: Verify no XSD schemas committed
