@@ -25,9 +25,6 @@
     <Copyright>Copyright 2025 Chizaruu. CargoWise® is a registered trademark of
       WiseTech Global Limited.</Copyright>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-
-    <!-- Legal Notices -->
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
