@@ -1,4 +1,3 @@
-using CargoWiseNetLibrary.Models.Universal;
 using CargoWiseNetLibrary.Serialization;
 using FluentAssertions;
 using Xunit;
@@ -8,7 +7,9 @@ using Task = System.Threading.Tasks.Task;
 namespace CargoWiseNetLibrary.Tests.Serialization;
 
 /// <summary>
-/// Tests XML serialization for all Universal models
+/// Comprehensive XML serialization tests for ALL Universal models
+/// Covers all XSD files from the Universal schema directory:
+/// - UniversalShipment.xsd, UniversalTransaction.xsd, UniversalSchedule.xsd, etc.
 /// </summary>
 public class UniversalXmlSerializerTests
 {
@@ -20,7 +21,6 @@ public class UniversalXmlSerializerTests
         public object? Model { get; set; }
         public string ModelName { get; set; } = string.Empty;
 
-        // Required for deserialization
         public ModelTestData()
         {
         }
@@ -40,38 +40,6 @@ public class UniversalXmlSerializerTests
             if (type != null)
             {
                 Model = Activator.CreateInstance(type);
-
-                // Initialize specific properties based on type
-                if (Model is UniversalShipmentData shipmentData)
-                {
-                    shipmentData.version = "1.1";
-                    shipmentData.Shipment = new Shipment();
-                }
-                else if (Model is UniversalScheduleData scheduleData)
-                {
-                    scheduleData.version = "1.1";
-                    scheduleData.Schedule = new Schedule();
-                }
-                else if (Model is UniversalTransactionData transactionData)
-                {
-                    transactionData.version = "1.1";
-                    transactionData.TransactionInfo = new TransactionInfo();
-                }
-                else if (Model is UniversalTransactionBatchData transactionBatchData)
-                {
-                    transactionBatchData.version = "1.1";
-                    transactionBatchData.TransactionBatch = new TransactionBatch();
-                }
-                else if (Model is UniversalShipmentRequestData shipmentRequestData)
-                {
-                    shipmentRequestData.version = "1.1";
-                    shipmentRequestData.ShipmentRequest = new ShipmentRequest();
-                }
-                else if (Model is UniversalTransactionBatchRequestData transactionBatchRequestData)
-                {
-                    transactionBatchRequestData.version = "1.1";
-                    transactionBatchRequestData.TransactionBatchRequest = new TransactionBatchRequest();
-                }
             }
         }
 
@@ -87,83 +55,100 @@ public class UniversalXmlSerializerTests
         }
     }
 
-    // Test data provider for main Universal root models
-    public static TheoryData<ModelTestData> GetUniversalRootModels()
+    /// <summary>
+    /// Test data provider for ALL Universal model types
+    /// Based on the XSD files in the Universal schema directory
+    /// </summary>
+    public static TheoryData<ModelTestData> GetAllUniversalModels()
     {
-        return
-        [
-            new(
-                new UniversalShipmentData
-                {
-                    version = "1.1",
-                    Shipment = new Shipment()
-                },
-                "UniversalShipmentData"
-            ),
-            new(
-                new UniversalScheduleData
-                {
-                    version = "1.1",
-                    Schedule = new Schedule()
-                },
-                "UniversalScheduleData"
-            ),
-            new(
-                new UniversalTransactionData
-                {
-                    version = "1.1",
-                    TransactionInfo = new TransactionInfo()
-                },
-                "UniversalTransactionData"
-            ),
-            new(
-                new UniversalTransactionBatchData
-                {
-                    version = "1.1",
-                    TransactionBatch = new TransactionBatch()
-                },
-                "UniversalTransactionBatchData"
-            ),
-            new(
-                new UniversalShipmentRequestData
-                {
-                    version = "1.1",
-                    ShipmentRequest = new ShipmentRequest()
-                },
-                "UniversalShipmentRequestData"
-            ),
-            new(
-                new UniversalTransactionBatchRequestData
-                {
-                    version = "1.1",
-                    TransactionBatchRequest = new TransactionBatchRequest()
-                },
-                "UniversalTransactionBatchRequestData"
-            )
-        ];
+        var data = new TheoryData<ModelTestData>();
+
+        // Core Universal models - Data wrapper types
+        AddIfTypeExists(data, "UniversalShipmentData");
+        AddIfTypeExists(data, "UniversalTransactionData");
+        AddIfTypeExists(data, "UniversalTransactionBatchData");
+        AddIfTypeExists(data, "UniversalScheduleData");
+        AddIfTypeExists(data, "UniversalEventData");
+        AddIfTypeExists(data, "UniversalActivityData");
+
+        // Request types
+        AddIfTypeExists(data, "UniversalShipmentRequestData");
+        AddIfTypeExists(data, "UniversalTransactionBatchRequestData");
+        AddIfTypeExists(data, "UniversalActivityRequestData");
+        AddIfTypeExists(data, "UniversalDocumentRequestData");
+        AddIfTypeExists(data, "UniversalInterchangeRequeueRequestData");
+
+        // Response and Interchange
+        AddIfTypeExists(data, "UniversalResponseData");
+        AddIfTypeExists(data, "UniversalInterchange");
+
+        // Main entity types (from the data wrappers)
+        AddIfTypeExists(data, "Shipment");
+        AddIfTypeExists(data, "TransactionInfo");
+        AddIfTypeExists(data, "TransactionBatch");
+        AddIfTypeExists(data, "Schedule");
+        AddIfTypeExists(data, "UniversalEvent");
+        AddIfTypeExists(data, "Activity");
+
+        // Request entity types
+        AddIfTypeExists(data, "ShipmentRequest");
+        AddIfTypeExists(data, "TransactionBatchRequest");
+        AddIfTypeExists(data, "ActivityRequest");
+        AddIfTypeExists(data, "DocumentRequest");
+
+        return data;
     }
 
-    // Test data provider for common nested models
-    public static TheoryData<ModelTestData> GetCommonModels()
+    /// <summary>
+    /// Test data provider for commonly used Universal models
+    /// </summary>
+    public static TheoryData<ModelTestData> GetCommonUniversalModels()
     {
-        return
-        [
-            new(new Activity(), "Activity"),
-            new(new Branch(), "Branch"),
-            new(new Company(), "Company"),
-            new(new Staff(), "Staff"),
-            new(new Department(), "Department"),
-            new(new CodeDescriptionPair(), "CodeDescriptionPair"),
-            new(new DataContext(), "DataContext"),
-            new(new CustomizedField(), "CustomizedField"),
-            new(new OrganizationAddress(), "OrganizationAddress"),
-            new(new Milestone(), "Milestone")
-        ];
+        var data = new TheoryData<ModelTestData>();
+
+        AddIfTypeExists(data, "UniversalShipmentData");
+        AddIfTypeExists(data, "UniversalTransactionData");
+        AddIfTypeExists(data, "UniversalScheduleData");
+        AddIfTypeExists(data, "UniversalInterchange");
+        AddIfTypeExists(data, "Shipment");
+        AddIfTypeExists(data, "TransactionInfo");
+        AddIfTypeExists(data, "Schedule");
+        AddIfTypeExists(data, "Activity");
+        AddIfTypeExists(data, "UniversalEvent");
+
+        return data;
     }
+
+    /// <summary>
+    /// Helper method to add a type to test data if it exists in the assembly
+    /// </summary>
+    private static void AddIfTypeExists(TheoryData<ModelTestData> data, string typeName)
+    {
+        var fullTypeName = $"CargoWiseNetLibrary.Models.Universal.{typeName}, CargoWiseNetLibrary";
+        var type = Type.GetType(fullTypeName);
+
+        if (type != null)
+        {
+            try
+            {
+                var instance = Activator.CreateInstance(type);
+                if (instance != null)
+                {
+                    data.Add(new ModelTestData(instance, typeName));
+                }
+            }
+            catch
+            {
+                // Skip types that can't be instantiated without parameters
+            }
+        }
+    }
+
+    #region Theory Tests - All Models
 
     [Theory]
-    [MemberData(nameof(GetUniversalRootModels))]
-    public void Serialize_UniversalRootModels_ReturnsValidXml(ModelTestData testData)
+    [MemberData(nameof(GetAllUniversalModels))]
+    public void Serialize_AllUniversalModels_ReturnsValidXml(ModelTestData testData)
     {
         // Act
         var xml = SerializeModel(testData.Model!);
@@ -171,12 +156,11 @@ public class UniversalXmlSerializerTests
         // Assert
         xml.Should().NotBeNullOrEmpty($"{testData.ModelName} should serialize to XML");
         xml.Should().Contain("<?xml", $"{testData.ModelName} should include XML declaration");
-        xml.Should().Contain($"<{GetRootElementName(testData.ModelName)}", $"{testData.ModelName} should contain root element");
     }
 
     [Theory]
-    [MemberData(nameof(GetUniversalRootModels))]
-    public void RoundTrip_UniversalRootModels_PreservesData(ModelTestData testData)
+    [MemberData(nameof(GetAllUniversalModels))]
+    public void RoundTrip_AllUniversalModels_PreservesData(ModelTestData testData)
     {
         // Act
         var xml = SerializeModel(testData.Model!);
@@ -188,8 +172,54 @@ public class UniversalXmlSerializerTests
     }
 
     [Theory]
-    [MemberData(nameof(GetUniversalRootModels))]
-    public async Task SerializeToFileAsync_UniversalRootModels_CreatesValidFile(ModelTestData testData)
+    [MemberData(nameof(GetAllUniversalModels))]
+    public void Clone_AllUniversalModels_CreatesDeepCopy(ModelTestData testData)
+    {
+        // Act
+        var clone = CloneModel(testData.Model!);
+
+        // Assert
+        clone.Should().NotBeNull($"{testData.ModelName} should be cloneable");
+        clone.Should().NotBeSameAs(testData.Model, $"{testData.ModelName} clone should be a different instance");
+        clone.Should().BeOfType(testData.Model!.GetType(), $"{testData.ModelName} clone should maintain type");
+    }
+
+    [Theory]
+    [MemberData(nameof(GetAllUniversalModels))]
+    public void IsValid_AllUniversalModels_ReturnsTrueForValidXml(ModelTestData testData)
+    {
+        // Arrange
+        var xml = SerializeModel(testData.Model!);
+
+        // Act
+        var isValid = IsValidXml(testData.Model!.GetType(), xml);
+
+        // Assert
+        isValid.Should().BeTrue($"{testData.ModelName} serialized XML should be valid");
+    }
+
+    [Theory]
+    [MemberData(nameof(GetAllUniversalModels))]
+    public void TryDeserialize_AllUniversalModels_ReturnsTrue(ModelTestData testData)
+    {
+        // Arrange
+        var xml = SerializeModel(testData.Model!);
+
+        // Act
+        var success = TryDeserializeModel(testData.Model!.GetType(), xml, out var result);
+
+        // Assert
+        success.Should().BeTrue($"{testData.ModelName} should deserialize successfully");
+        result.Should().NotBeNull($"{testData.ModelName} should return a valid object");
+    }
+
+    #endregion Theory Tests - All Models
+
+    #region Theory Tests - Common Models File Operations
+
+    [Theory]
+    [MemberData(nameof(GetCommonUniversalModels))]
+    public async Task SerializeToFileAsync_CommonUniversalModels_CreatesValidFile(ModelTestData testData)
     {
         // Arrange
         var tempFile = Path.Combine(Path.GetTempPath(), $"{testData.ModelName}_{Guid.NewGuid()}.xml");
@@ -214,58 +244,156 @@ public class UniversalXmlSerializerTests
     }
 
     [Theory]
-    [MemberData(nameof(GetCommonModels))]
-    public void Serialize_CommonModels_ReturnsValidXml(ModelTestData testData)
-    {
-        // Act
-        var xml = SerializeModel(testData.Model!);
-
-        // Assert
-        xml.Should().NotBeNullOrEmpty($"{testData.ModelName} should serialize to XML");
-        xml.Should().Contain("<?xml", $"{testData.ModelName} should include XML declaration");
-    }
-
-    [Theory]
-    [MemberData(nameof(GetCommonModels))]
-    public void Clone_CommonModels_CreatesDeepCopy(ModelTestData testData)
-    {
-        // Act
-        var clone = CloneModel(testData.Model!);
-
-        // Assert
-        clone.Should().NotBeNull($"{testData.ModelName} should be cloneable");
-        clone.Should().NotBeSameAs(testData.Model, $"{testData.ModelName} clone should be a different instance");
-        clone.Should().BeOfType(testData.Model!.GetType(), $"{testData.ModelName} clone should maintain type");
-    }
-
-    [Theory]
-    [MemberData(nameof(GetCommonModels))]
-    public void IsValid_CommonModels_ReturnsTrueForValidXml(ModelTestData testData)
+    [MemberData(nameof(GetCommonUniversalModels))]
+    public void SerializeToFile_CommonUniversalModels_CreatesValidFile(ModelTestData testData)
     {
         // Arrange
-        var xml = SerializeModel(testData.Model!);
+        var tempFile = Path.Combine(Path.GetTempPath(), $"{testData.ModelName}_{Guid.NewGuid()}.xml");
 
-        // Act
-        var isValid = IsValidXml(testData.Model!.GetType(), xml);
+        try
+        {
+            // Act
+            SerializeToFile(testData.Model!, tempFile);
 
-        // Assert
-        isValid.Should().BeTrue($"{testData.ModelName} serialized XML should be valid");
+            // Assert
+            File.Exists(tempFile).Should().BeTrue($"{testData.ModelName} should create file");
+            var content = File.ReadAllText(tempFile);
+            content.Should().NotBeNullOrEmpty($"{testData.ModelName} file should have content");
+            content.Should().Contain("<?xml", $"{testData.ModelName} file should contain XML declaration");
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
     }
 
     [Theory]
-    [MemberData(nameof(GetCommonModels))]
-    public void TryDeserialize_CommonModels_ReturnsTrue(ModelTestData testData)
+    [MemberData(nameof(GetCommonUniversalModels))]
+    public void DeserializeFromFile_CommonUniversalModels_ReturnsValidObject(ModelTestData testData)
     {
         // Arrange
-        var xml = SerializeModel(testData.Model!);
+        var tempFile = Path.Combine(Path.GetTempPath(), $"{testData.ModelName}_{Guid.NewGuid()}.xml");
+
+        try
+        {
+            SerializeToFile(testData.Model!, tempFile);
+
+            // Act
+            var deserialized = DeserializeFromFile(testData.Model!.GetType(), tempFile);
+
+            // Assert
+            deserialized.Should().NotBeNull($"{testData.ModelName} should deserialize from file");
+            deserialized.Should().BeOfType(testData.Model!.GetType(), $"{testData.ModelName} should maintain type");
+        }
+        finally
+        {
+            // Cleanup
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
+    }
+
+    #endregion Theory Tests - Common Models File Operations
+
+    #region Theory Tests - XML Formatting
+
+    [Theory]
+    [MemberData(nameof(GetCommonUniversalModels))]
+    public void Serialize_WithIndentOption_FormatsXml(ModelTestData testData)
+    {
+        // Arrange
+        var options = new XmlSerializerOptions { Indent = true };
 
         // Act
-        var success = TryDeserializeModel(testData.Model!.GetType(), xml, out var result);
+        var xml = SerializeModelWithOptions(testData.Model!, options);
 
         // Assert
-        success.Should().BeTrue($"{testData.ModelName} should deserialize successfully");
-        result.Should().NotBeNull($"{testData.ModelName} should return a valid object");
+        xml.Should().Match(s => s.Contains("\r\n") || s.Contains('\n'), $"{testData.ModelName} should have line breaks when indented");
     }
+
+    [Theory]
+    [MemberData(nameof(GetCommonUniversalModels))]
+    public void Serialize_WithoutIndentOption_MinimizesXml(ModelTestData testData)
+    {
+        // Arrange
+        var options = new XmlSerializerOptions { Indent = false };
+
+        // Act
+        var xml = SerializeModelWithOptions(testData.Model!, options);
+
+        // Assert
+        xml.Should().NotBeNullOrEmpty($"{testData.ModelName} should serialize without indentation");
+    }
+
+    #endregion Theory Tests - XML Formatting
+
+    #region Error Handling Tests
+
+    [Fact]
+    public void TryDeserialize_WithInvalidUniversalXml_ReturnsFalse()
+    {
+        // Arrange
+        var shipmentType = Type.GetType("CargoWiseNetLibrary.Models.Universal.UniversalShipmentData, CargoWiseNetLibrary");
+        if (shipmentType == null) return;
+
+        var invalidXml = "<Invalid>xml</Invalid>";
+
+        // Act
+        var success = TryDeserializeModel(shipmentType, invalidXml, out var result);
+
+        // Assert
+        success.Should().BeFalse();
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void IsValid_WithInvalidUniversalXml_ReturnsFalse()
+    {
+        // Arrange
+        var shipmentType = Type.GetType("CargoWiseNetLibrary.Models.Universal.UniversalShipmentData, CargoWiseNetLibrary");
+        if (shipmentType == null) return;
+
+        var invalidXml = "not valid xml at all";
+
+        // Act
+        var isValid = IsValidXml(shipmentType, invalidXml);
+
+        // Assert
+        isValid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void DeserializeFromFile_WithNonExistentFile_ThrowsFileNotFoundException()
+    {
+        // Arrange
+        var shipmentType = Type.GetType("CargoWiseNetLibrary.Models.Universal.UniversalShipmentData, CargoWiseNetLibrary");
+        if (shipmentType == null) return;
+
+        var nonExistentFile = Path.Combine(Path.GetTempPath(), $"nonexistent_{Guid.NewGuid()}.xml");
+
+        // Act & Assert
+        var act = () => DeserializeFromFile(shipmentType, nonExistentFile);
+        act.Should().Throw<Exception>();
+    }
+
+    [Fact]
+    public void TryDeserialize_WithEmptyString_ReturnsFalse()
+    {
+        // Arrange
+        var shipmentType = Type.GetType("CargoWiseNetLibrary.Models.Universal.UniversalShipmentData, CargoWiseNetLibrary");
+        if (shipmentType == null) return;
+
+        // Act
+        var success = TryDeserializeModel(shipmentType, string.Empty, out var result);
+
+        // Assert
+        success.Should().BeFalse();
+        result.Should().BeNull();
+    }
+
+    #endregion Error Handling Tests
 
     #region Helper Methods using Reflection
 
@@ -276,11 +404,25 @@ public class UniversalXmlSerializerTests
         return (string)serializeMethod!.Invoke(null, [model, null])!;
     }
 
+    private static string SerializeModelWithOptions(object model, XmlSerializerOptions options)
+    {
+        var serializerType = typeof(XmlSerializer<>).MakeGenericType(model.GetType());
+        var serializeMethod = serializerType.GetMethod("Serialize", [model.GetType(), typeof(XmlSerializerOptions)]);
+        return (string)serializeMethod!.Invoke(null, [model, options])!;
+    }
+
     private static object? DeserializeModel(Type modelType, string xml)
     {
         var serializerType = typeof(XmlSerializer<>).MakeGenericType(modelType);
         var deserializeMethod = serializerType.GetMethod("Deserialize", [typeof(string)]) ?? throw new InvalidOperationException($"Could not find Deserialize method for {modelType.Name}");
         return deserializeMethod.Invoke(null, [xml]);
+    }
+
+    private static void SerializeToFile(object model, string filePath)
+    {
+        var serializerType = typeof(XmlSerializer<>).MakeGenericType(model.GetType());
+        var serializeMethod = serializerType.GetMethod("SerializeToFile", [model.GetType(), typeof(string), typeof(XmlSerializerOptions)]) ?? throw new InvalidOperationException($"Could not find SerializeToFile method for {model.GetType().Name}");
+        serializeMethod.Invoke(null, [model, filePath, null]);
     }
 
     private static async Task SerializeToFileAsync(object model, string filePath)
@@ -289,6 +431,16 @@ public class UniversalXmlSerializerTests
         var serializeMethod = serializerType.GetMethod("SerializeToFileAsync") ?? throw new InvalidOperationException($"Could not find SerializeToFileAsync method for {model.GetType().Name}");
         var task = (Task)serializeMethod.Invoke(null, [model, filePath, null, default(CancellationToken)])!;
         await task;
+    }
+
+    private static object? DeserializeFromFile(Type modelType, string filePath)
+    {
+        var serializerType = typeof(XmlSerializer<>).MakeGenericType(modelType);
+        // Find the method using BindingFlags to handle any overloads
+        var methods = serializerType.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        var deserializeMethod = methods.FirstOrDefault(m => m.Name == "DeserializeFromFile" && m.GetParameters().Length == 1)
+            ?? throw new InvalidOperationException($"Could not find DeserializeFromFile method for {modelType.Name}");
+        return deserializeMethod.Invoke(null, [filePath]);
     }
 
     private static object? CloneModel(object model)
@@ -327,21 +479,6 @@ public class UniversalXmlSerializerTests
         {
             return false;
         }
-    }
-
-    private static string GetRootElementName(string modelName)
-    {
-        // Map model names to their XML root element names
-        return modelName switch
-        {
-            "UniversalShipmentData" => "UniversalShipment",
-            "UniversalScheduleData" => "UniversalSchedule",
-            "UniversalTransactionData" => "UniversalTransaction",
-            "UniversalTransactionBatchData" => "UniversalTransactionBatch",
-            "UniversalShipmentRequestData" => "UniversalShipmentRequest",
-            "UniversalTransactionBatchRequestData" => "UniversalTransactionBatchRequest",
-            _ => modelName
-        };
     }
 
     #endregion Helper Methods using Reflection

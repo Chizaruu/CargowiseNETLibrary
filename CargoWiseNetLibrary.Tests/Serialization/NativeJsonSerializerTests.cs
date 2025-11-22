@@ -1,4 +1,3 @@
-using CargoWiseNetLibrary.Models.Native;
 using CargoWiseNetLibrary.Serialization;
 using FluentAssertions;
 using Xunit;
