@@ -61,7 +61,7 @@ dotnet add package CargoWiseNetLibrary
 ### Via PackageReference
 
 ```xml
-<PackageReference Include="CargoWiseNetLibrary" Version="1.0.0" />
+<PackageReference Include="CargoWiseNetLibrary" Version="0.1.1" />
 ```
 
 ## Quick Start
@@ -706,18 +706,6 @@ See [LEGAL.md](LEGAL.md) for complete legal information and disclaimers.
 - 🐛 [Report Issues](https://github.com/Chizaruu/CargoWiseNetLibrary/issues)
 - 💬 [Discussions](https://github.com/Chizaruu/CargoWiseNetLibrary/discussions)
 - 📧 Contact: contact@koalahollow.com
-
-## Changelog
-
-### Version 1.0.0 (Current)
-
-- Initial release with Universal and Native schema support
-- Complete XML and JSON serialization
-- Comprehensive validation framework
-- UniversalInterchange helper utilities
-- Async file operations
-- Clone and TryDeserialize patterns
-- Batch processing support
 
 ---
 
