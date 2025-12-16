@@ -472,3 +472,5 @@ logs/
 temp/
 tmp/
 *.tmp
+schemas/Native XML.zip
+schemas/Universal XML.zip

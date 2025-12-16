@@ -6422,6 +6422,13 @@ namespace CargoWiseNetLibrary.Models.Universal
         public string OriginalTransactionDate { get; set; }
         
         /// <summary>
+        /// <para xml:lang="en">Maximum length: 50.</para>
+        /// </summary>
+        [MaxLengthAttribute(50)]
+        [XmlElementAttribute("OriginalTransactionGovernmentAllocatedID")]
+        public string OriginalTransactionGovernmentAllocatedID { get; set; }
+        
+        /// <summary>
         /// <para xml:lang="en">Maximum length: 38.</para>
         /// </summary>
         [MaxLengthAttribute(38)]
