@@ -105,14 +105,35 @@ echo Cleaning model file names...
 powershell -Command "Get-ChildItem -Path '%OUTPUT_DIR%' -Filter *.cs -Recurse | ForEach-Object { $newName = $_.Name -replace '^.*?\.([^\.]+)\.cs$', '$1.cs'; if ($_.Name -ne $newName) { Rename-Item -Path $_.FullName -NewName $newName -Force; Write-Host ('Renamed: ' + $_.Name + ' -> ' + $newName) } }"
 echo.
 
-
-
 REM ========================================
-REM STEP 3: Merge duplicate class definitions in Native.cs (Native/NativeBody)
+REM STEP 3: Fix NativeBody Type References
 REM ========================================
 
 echo ========================================
-echo STEP 3: Merging Duplicate Classes (Native.cs)
+echo STEP 3: Fixing NativeBody Type References
+echo ========================================
+echo.
+
+echo Fixing type references in Native.cs...
+if exist "%OUTPUT_DIR%\Native.cs" (
+    powershell -ExecutionPolicy Bypass -File "%BATCH_DIR%\Fix-NativeBody.ps1" -FilePath "%OUTPUT_DIR%\Native.cs"
+    if %ERRORLEVEL% NEQ 0 (
+        echo Warning: NativeBody fixer encountered issues
+        echo Check output for details
+    )
+) else (
+    echo Warning: Native.cs not found, skipping type fix step
+    echo Generated files:
+    dir /b "%OUTPUT_DIR%\*.cs"
+)
+echo.
+
+REM ========================================
+REM STEP 4: Merge duplicate class definitions in Native.cs (Native/NativeBody)
+REM ========================================
+
+echo ========================================
+echo STEP 4: Merging Duplicate Classes (Native.cs)
 echo ========================================
 echo.
 
@@ -131,11 +152,11 @@ if exist "%OUTPUT_DIR%\Native.cs" (
 echo.
 
 REM ========================================
-REM STEP 4: Update READMEs
+REM STEP 5: Update READMEs
 REM ========================================
 
 echo ========================================
-echo STEP 4: Updating Documentation
+echo STEP 5: Updating Documentation
 echo ========================================
 echo.
 
