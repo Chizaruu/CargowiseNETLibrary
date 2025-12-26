@@ -1957,6 +1957,8 @@ namespace CargoWiseNetLibrary.Models.Universal
         
         NVO,
         
+        OCM,
+        
         ORP,
         
         PAG,
@@ -1992,6 +1994,8 @@ namespace CargoWiseNetLibrary.Models.Universal
         TPC,
         
         UAM,
+        
+        VBS,
         
         WAR,
         
@@ -9926,6 +9930,12 @@ namespace CargoWiseNetLibrary.Models.Universal
         [XmlElementAttribute("Country")]
         public Country Country { get; set; }
         
+        [XmlElementAttribute("DateReceivedUtc")]
+        public string DateReceivedUtc { get; set; }
+        
+        [XmlElementAttribute("DateRequiredUtc")]
+        public string DateRequiredUtc { get; set; }
+        
         /// <summary>
         /// <para xml:lang="en">Maximum length: 200.</para>
         /// </summary>
@@ -10126,9 +10136,9 @@ namespace CargoWiseNetLibrary.Models.Universal
         public string Type { get; set; }
         
         /// <summary>
-        /// <para xml:lang="en">Maximum length: 80.</para>
+        /// <para xml:lang="en">Maximum length: 100.</para>
         /// </summary>
-        [MaxLengthAttribute(80)]
+        [MaxLengthAttribute(100)]
         [XmlElementAttribute("Value")]
         public string Value { get; set; }
     }
@@ -10892,6 +10902,9 @@ namespace CargoWiseNetLibrary.Models.Universal
         [XmlElementAttribute("CommercialInfo")]
         public CommercialInfo CommercialInfo { get; set; }
         
+        [XmlElementAttribute("CommunicationLanguage")]
+        public Language CommunicationLanguage { get; set; }
+        
         [XmlElementAttribute("CommunityTransitStatus")]
         public CodeDescriptionPair10Char CommunityTransitStatus { get; set; }
         
@@ -11468,6 +11481,39 @@ namespace CargoWiseNetLibrary.Models.Universal
         
         [XmlElementAttribute("HouseBillOfLadingType")]
         public CodeDescriptionPair HouseBillOfLadingType { get; set; }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("IgnoreIncoterm")]
+        public bool IgnoreIncotermValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die IgnoreIncoterm-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the IgnoreIncoterm property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool IgnoreIncotermValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> IgnoreIncoterm
+        {
+            get
+            {
+                if (this.IgnoreIncotermValueSpecified)
+                {
+                    return this.IgnoreIncotermValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.IgnoreIncotermValue = value.GetValueOrDefault();
+                this.IgnoreIncotermValueSpecified = value.HasValue;
+            }
+        }
         
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         [XmlElementAttribute("InsuranceValue")]
@@ -12541,6 +12587,13 @@ namespace CargoWiseNetLibrary.Models.Universal
         [XmlElementAttribute("OperationalStatus")]
         public CodeDescriptionPair OperationalStatus { get; set; }
         
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 3.</para>
+        /// </summary>
+        [MaxLengthAttribute(3)]
+        [XmlElementAttribute("OrgRole")]
+        public string OrgRole { get; set; }
+        
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         [XmlElementAttribute("OuterPacks")]
         public int OuterPacksValue { get; set; }
@@ -13516,6 +13569,7 @@ namespace CargoWiseNetLibrary.Models.Universal
             this._customsSupportingInformationCollection = new Collection<CustomsSupportingInformation>();
             this._customsValueInformationCollection = new Collection<CustomsValueInformation>();
             this._dateCollection = new Collection<Date>();
+            this._eDocsDocumentTrackingCollection = new Collection<DocumentTracking>();
             this._entryHeaderCollection = new Collection<EntryHeader>();
             this._entryInstructionCollection = new Collection<EntryInstruction>();
             this._entryNumberCollection = new Collection<EntryNumber>();
@@ -13534,6 +13588,7 @@ namespace CargoWiseNetLibrary.Models.Universal
             this._potentialCarrierCollection = new Collection<PotentialCarrier>();
             this._preCarriageShipmentCollection = new Collection<Shipment>();
             this._relatedShipmentCollection = new Collection<Shipment>();
+            this._requestCollection = new Collection<WorkflowRequest>();
             this._specialHandlingCollection = new Collection<CodeDescriptionPair>();
             this._transportEquipmentCollection = new Collection<Equipment>();
             this._transportMeansCollection = new Collection<TransportMeans>();
@@ -13915,6 +13970,37 @@ namespace CargoWiseNetLibrary.Models.Universal
             {
                 return ((this.DateCollection != null) 
                             && (this.DateCollection.Count != 0));
+            }
+        }
+        
+        [XmlIgnoreAttribute()]
+        private Collection<DocumentTracking> _eDocsDocumentTrackingCollection;
+        
+        [XmlArrayAttribute("EDocsDocumentTrackingCollection")]
+        [XmlArrayItemAttribute("EDocsDocumentTracking", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+        public Collection<DocumentTracking> EDocsDocumentTrackingCollection
+        {
+            get
+            {
+                return _eDocsDocumentTrackingCollection;
+            }
+            set
+            {
+                _eDocsDocumentTrackingCollection = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EDocsDocumentTrackingCollection-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the EDocsDocumentTrackingCollection collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool EDocsDocumentTrackingCollectionSpecified
+        {
+            get
+            {
+                return ((this.EDocsDocumentTrackingCollection != null) 
+                            && (this.EDocsDocumentTrackingCollection.Count != 0));
             }
         }
         
@@ -14494,6 +14580,37 @@ namespace CargoWiseNetLibrary.Models.Universal
             {
                 return ((this.RelatedShipmentCollection != null) 
                             && (this.RelatedShipmentCollection.Count != 0));
+            }
+        }
+        
+        [XmlIgnoreAttribute()]
+        private Collection<WorkflowRequest> _requestCollection;
+        
+        [XmlArrayAttribute("RequestCollection")]
+        [XmlArrayItemAttribute("Request", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+        public Collection<WorkflowRequest> RequestCollection
+        {
+            get
+            {
+                return _requestCollection;
+            }
+            set
+            {
+                _requestCollection = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die RequestCollection-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the RequestCollection collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool RequestCollectionSpecified
+        {
+            get
+            {
+                return ((this.RequestCollection != null) 
+                            && (this.RequestCollection.Count != 0));
             }
         }
         
@@ -15771,6 +15888,14 @@ namespace CargoWiseNetLibrary.Models.Universal
         DeliverFrom,
         
         DeliverBy,
+        
+        ExportDocsDue,
+        
+        ImportDocsDue,
+        
+        CfsCutOff,
+        
+        CtoCutOff,
     }
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
@@ -16611,6 +16736,13 @@ namespace CargoWiseNetLibrary.Models.Universal
         
         [XmlElementAttribute("RelatedIndicator")]
         public CodeDescriptionPair RelatedIndicator { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 2147483647.</para>
+        /// </summary>
+        [MaxLengthAttribute(2147483647)]
+        [XmlElementAttribute("SpecialMentions")]
+        public string SpecialMentions { get; set; }
         
         [XmlElementAttribute("Supplier")]
         public OrganizationAddress Supplier { get; set; }
@@ -18071,6 +18203,13 @@ namespace CargoWiseNetLibrary.Models.Universal
         [MaxLengthAttribute(10)]
         [XmlElementAttribute("SecondaryPreference")]
         public string SecondaryPreference { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 2147483647.</para>
+        /// </summary>
+        [MaxLengthAttribute(2147483647)]
+        [XmlElementAttribute("SpecialMentions")]
+        public string SpecialMentions { get; set; }
         
         [XmlElementAttribute("StateOfOrigin")]
         public State StateOfOrigin { get; set; }
@@ -30320,6 +30459,9 @@ namespace CargoWiseNetLibrary.Models.Universal
         [XmlElementAttribute("Consignee")]
         public OrganizationAddress Consignee { get; set; }
         
+        [XmlElementAttribute("ContainerMode")]
+        public CodeDescriptionPair ContainerMode { get; set; }
+        
         /// <summary>
         /// <para xml:lang="en">Maximum length: 20.</para>
         /// </summary>
@@ -31270,6 +31412,9 @@ namespace CargoWiseNetLibrary.Models.Universal
         [XmlElementAttribute("SupplierConfirmedAcceptance")]
         public string SupplierConfirmedAcceptance { get; set; }
         
+        [XmlElementAttribute("TransportMode")]
+        public CodeDescriptionPair TransportMode { get; set; }
+        
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         [XmlElementAttribute("UnderQuantityPercentageLimit")]
         public decimal UnderQuantityPercentageLimitValue { get; set; }
@@ -31511,6 +31656,53 @@ namespace CargoWiseNetLibrary.Models.Universal
         public UnitOfWeight WeightUnit { get; set; }
         
         [XmlIgnoreAttribute()]
+        private Collection<AttachedDocument> _attachedDocumentCollection;
+        
+        [XmlArrayAttribute("AttachedDocumentCollection")]
+        [XmlArrayItemAttribute("AttachedDocument", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+        public Collection<AttachedDocument> AttachedDocumentCollection
+        {
+            get
+            {
+                return _attachedDocumentCollection;
+            }
+            set
+            {
+                _attachedDocumentCollection = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die AttachedDocumentCollection-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the AttachedDocumentCollection collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool AttachedDocumentCollectionSpecified
+        {
+            get
+            {
+                return ((this.AttachedDocumentCollection != null) 
+                            && (this.AttachedDocumentCollection.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="OrderLine" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="OrderLine" /> class.</para>
+        /// </summary>
+        public OrderLine()
+        {
+            this._attachedDocumentCollection = new Collection<AttachedDocument>();
+            this._customizedFieldCollection = new Collection<CustomizedField>();
+            this._eDocsDocumentTrackingCollection = new Collection<DocumentTracking>();
+            this._orderLineCollection = new Collection<OrderLine>();
+            this._organizationAddressCollection = new Collection<OrganizationAddress>();
+            this._relatedEntityCollection = new Collection<Entity>();
+            this._requestCollection = new Collection<WorkflowRequest>();
+            this._uNDGCollection = new Collection<UNDG>();
+        }
+        
+        [XmlIgnoreAttribute()]
         private Collection<CustomizedField> _customizedFieldCollection;
         
         [XmlArrayAttribute("CustomizedFieldCollection")]
@@ -31541,17 +31733,35 @@ namespace CargoWiseNetLibrary.Models.Universal
             }
         }
         
-        /// <summary>
-        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="OrderLine" /> Klasse.</para>
-        /// <para xml:lang="en">Initializes a new instance of the <see cref="OrderLine" /> class.</para>
-        /// </summary>
-        public OrderLine()
+        [XmlIgnoreAttribute()]
+        private Collection<DocumentTracking> _eDocsDocumentTrackingCollection;
+        
+        [XmlArrayAttribute("EDocsDocumentTrackingCollection")]
+        [XmlArrayItemAttribute("EDocsDocumentTracking", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+        public Collection<DocumentTracking> EDocsDocumentTrackingCollection
         {
-            this._customizedFieldCollection = new Collection<CustomizedField>();
-            this._orderLineCollection = new Collection<OrderLine>();
-            this._organizationAddressCollection = new Collection<OrganizationAddress>();
-            this._relatedEntityCollection = new Collection<Entity>();
-            this._uNDGCollection = new Collection<UNDG>();
+            get
+            {
+                return _eDocsDocumentTrackingCollection;
+            }
+            set
+            {
+                _eDocsDocumentTrackingCollection = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EDocsDocumentTrackingCollection-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the EDocsDocumentTrackingCollection collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool EDocsDocumentTrackingCollectionSpecified
+        {
+            get
+            {
+                return ((this.EDocsDocumentTrackingCollection != null) 
+                            && (this.EDocsDocumentTrackingCollection.Count != 0));
+            }
         }
         
         [XmlIgnoreAttribute()]
@@ -31644,6 +31854,37 @@ namespace CargoWiseNetLibrary.Models.Universal
             {
                 return ((this.RelatedEntityCollection != null) 
                             && (this.RelatedEntityCollection.Count != 0));
+            }
+        }
+        
+        [XmlIgnoreAttribute()]
+        private Collection<WorkflowRequest> _requestCollection;
+        
+        [XmlArrayAttribute("RequestCollection")]
+        [XmlArrayItemAttribute("Request", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+        public Collection<WorkflowRequest> RequestCollection
+        {
+            get
+            {
+                return _requestCollection;
+            }
+            set
+            {
+                _requestCollection = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die RequestCollection-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the RequestCollection collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool RequestCollectionSpecified
+        {
+            get
+            {
+                return ((this.RequestCollection != null) 
+                            && (this.RequestCollection.Count != 0));
             }
         }
         
@@ -32483,6 +32724,52 @@ namespace CargoWiseNetLibrary.Models.Universal
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
     [SerializableAttribute()]
+    [XmlTypeAttribute("OrderLineAttachedDocumentCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class OrderLineAttachedDocumentCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<AttachedDocument> _attachedDocument;
+        
+        [XmlElementAttribute("AttachedDocument")]
+        public Collection<AttachedDocument> AttachedDocument
+        {
+            get
+            {
+                return _attachedDocument;
+            }
+            set
+            {
+                _attachedDocument = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die AttachedDocument-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the AttachedDocument collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool AttachedDocumentSpecified
+        {
+            get
+            {
+                return ((this.AttachedDocument != null) 
+                            && (this.AttachedDocument.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="OrderLineAttachedDocumentCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="OrderLineAttachedDocumentCollection" /> class.</para>
+        /// </summary>
+        public OrderLineAttachedDocumentCollection()
+        {
+            this._attachedDocument = new Collection<AttachedDocument>();
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
     [XmlTypeAttribute("OrderLineCustomizedFieldCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
     public partial class OrderLineCustomizedFieldCollection
     {
@@ -32524,6 +32811,52 @@ namespace CargoWiseNetLibrary.Models.Universal
         public OrderLineCustomizedFieldCollection()
         {
             this._customizedField = new Collection<CustomizedField>();
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
+    [XmlTypeAttribute("OrderLineEDocsDocumentTrackingCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class OrderLineEDocsDocumentTrackingCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<DocumentTracking> _eDocsDocumentTracking;
+        
+        [XmlElementAttribute("EDocsDocumentTracking")]
+        public Collection<DocumentTracking> EDocsDocumentTracking
+        {
+            get
+            {
+                return _eDocsDocumentTracking;
+            }
+            set
+            {
+                _eDocsDocumentTracking = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EDocsDocumentTracking-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the EDocsDocumentTracking collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool EDocsDocumentTrackingSpecified
+        {
+            get
+            {
+                return ((this.EDocsDocumentTracking != null) 
+                            && (this.EDocsDocumentTracking.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="OrderLineEDocsDocumentTrackingCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="OrderLineEDocsDocumentTrackingCollection" /> class.</para>
+        /// </summary>
+        public OrderLineEDocsDocumentTrackingCollection()
+        {
+            this._eDocsDocumentTracking = new Collection<DocumentTracking>();
         }
     }
     
@@ -32856,6 +33189,161 @@ namespace CargoWiseNetLibrary.Models.Universal
         {
             this._relatedEntity = new Collection<Entity>();
         }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
+    [XmlTypeAttribute("OrderLineRequestCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class OrderLineRequestCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<WorkflowRequest> _request;
+        
+        [XmlElementAttribute("Request")]
+        public Collection<WorkflowRequest> Request
+        {
+            get
+            {
+                return _request;
+            }
+            set
+            {
+                _request = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die Request-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the Request collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool RequestSpecified
+        {
+            get
+            {
+                return ((this.Request != null) 
+                            && (this.Request.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="OrderLineRequestCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="OrderLineRequestCollection" /> class.</para>
+        /// </summary>
+        public OrderLineRequestCollection()
+        {
+            this._request = new Collection<WorkflowRequest>();
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
+    [XmlTypeAttribute("WorkflowRequest", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+    public partial class WorkflowRequest
+    {
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 20.</para>
+        /// </summary>
+        [MaxLengthAttribute(20)]
+        [RequiredAttribute(AllowEmptyStrings=true)]
+        [XmlElementAttribute("RequestID")]
+        public string RequestID { get; set; }
+        
+        [XmlElementAttribute("AssignedToOrganization")]
+        public OrganizationAddress AssignedToOrganization { get; set; }
+        
+        [XmlElementAttribute("CloseTime")]
+        public string CloseTime { get; set; }
+        
+        [XmlElementAttribute("CreateTimeUtc")]
+        public string CreateTimeUtc { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 50.</para>
+        /// </summary>
+        [MaxLengthAttribute(50)]
+        [XmlElementAttribute("Description")]
+        public string Description { get; set; }
+        
+        [XmlElementAttribute("JobType")]
+        public CodeDescriptionPair JobType { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 2147483647.</para>
+        /// </summary>
+        [MaxLengthAttribute(2147483647)]
+        [XmlElementAttribute("Notes")]
+        public string Notes { get; set; }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("RequesteeCompleted")]
+        public bool RequesteeCompletedValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die RequesteeCompleted-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the RequesteeCompleted property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool RequesteeCompletedValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> RequesteeCompleted
+        {
+            get
+            {
+                if (this.RequesteeCompletedValueSpecified)
+                {
+                    return this.RequesteeCompletedValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.RequesteeCompletedValue = value.GetValueOrDefault();
+                this.RequesteeCompletedValueSpecified = value.HasValue;
+            }
+        }
+        
+        [XmlElementAttribute("RequiredByDate")]
+        public string RequiredByDate { get; set; }
+        
+        [XmlElementAttribute("Response")]
+        public RequestResponse Response { get; set; }
+        
+        [XmlElementAttribute("ResponseTime")]
+        public string ResponseTime { get; set; }
+        
+        [XmlElementAttribute("ReviewerOrganization")]
+        public OrganizationAddress ReviewerOrganization { get; set; }
+        
+        [XmlElementAttribute("Status")]
+        public CodeDescriptionPair Status { get; set; }
+        
+        [XmlElementAttribute("Type")]
+        public CodeDescriptionPair Type { get; set; }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
+    [XmlTypeAttribute("RequestResponse", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+    public partial class RequestResponse
+    {
+        
+        [XmlElementAttribute("Type")]
+        public CodeDescriptionPair Type { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 25.</para>
+        /// </summary>
+        [MaxLengthAttribute(25)]
+        [XmlElementAttribute("Value")]
+        public string Value { get; set; }
     }
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
@@ -34456,6 +34944,39 @@ namespace CargoWiseNetLibrary.Models.Universal
         public string ArrivalTruckWaitTime { get; set; }
         
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("BulbMode")]
+        public bool BulbModeValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die BulbMode-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the BulbMode property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool BulbModeValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> BulbMode
+        {
+            get
+            {
+                if (this.BulbModeValueSpecified)
+                {
+                    return this.BulbModeValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.BulbModeValue = value.GetValueOrDefault();
+                this.BulbModeValueSpecified = value.HasValue;
+            }
+        }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         [XmlElementAttribute("CarbonGasLevel")]
         public decimal CarbonGasLevelValue { get; set; }
         
@@ -34490,6 +35011,39 @@ namespace CargoWiseNetLibrary.Models.Universal
         
         [XmlElementAttribute("CarbonGasLevelUnit")]
         public CodeDescriptionPair CarbonGasLevelUnit { get; set; }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("ColdTreatment")]
+        public bool ColdTreatmentValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die ColdTreatment-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the ColdTreatment property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool ColdTreatmentValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> ColdTreatment
+        {
+            get
+            {
+                if (this.ColdTreatmentValueSpecified)
+                {
+                    return this.ColdTreatmentValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.ColdTreatmentValue = value.GetValueOrDefault();
+                this.ColdTreatmentValueSpecified = value.HasValue;
+            }
+        }
         
         [XmlElementAttribute("Commodity")]
         public Commodity Commodity { get; set; }
@@ -34811,6 +35365,39 @@ namespace CargoWiseNetLibrary.Models.Universal
         public string DepartureTruckWaitTime { get; set; }
         
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("DrainholesOpen")]
+        public bool DrainholesOpenValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die DrainholesOpen-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the DrainholesOpen property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool DrainholesOpenValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> DrainholesOpen
+        {
+            get
+            {
+                if (this.DrainholesOpenValueSpecified)
+                {
+                    return this.DrainholesOpenValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.DrainholesOpenValue = value.GetValueOrDefault();
+                this.DrainholesOpenValueSpecified = value.HasValue;
+            }
+        }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         [XmlElementAttribute("DunnageWeight")]
         public decimal DunnageWeightValue { get; set; }
         
@@ -35067,6 +35654,39 @@ namespace CargoWiseNetLibrary.Models.Universal
         
         [XmlElementAttribute("GateOutDate")]
         public string GateOutDate { get; set; }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("GeneratorSet")]
+        public bool GeneratorSetValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die GeneratorSet-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the GeneratorSet property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool GeneratorSetValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> GeneratorSet
+        {
+            get
+            {
+                if (this.GeneratorSetValueSpecified)
+                {
+                    return this.GeneratorSetValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.GeneratorSetValue = value.GetValueOrDefault();
+                this.GeneratorSetValueSpecified = value.HasValue;
+            }
+        }
         
         /// <summary>
         /// <para xml:lang="en">Maximum length: 35.</para>
@@ -35627,6 +36247,39 @@ namespace CargoWiseNetLibrary.Models.Universal
         }
         
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("IsVentilationOpen")]
+        public bool IsVentilationOpenValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die IsVentilationOpen-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the IsVentilationOpen property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool IsVentilationOpenValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> IsVentilationOpen
+        {
+            get
+            {
+                if (this.IsVentilationOpenValueSpecified)
+                {
+                    return this.IsVentilationOpenValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.IsVentilationOpenValue = value.GetValueOrDefault();
+                this.IsVentilationOpenValueSpecified = value.HasValue;
+            }
+        }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         [XmlElementAttribute("ItemCount")]
         public int ItemCountValue { get; set; }
         
@@ -36149,6 +36802,39 @@ namespace CargoWiseNetLibrary.Models.Universal
             {
                 this.PivotBreakValue = value.GetValueOrDefault();
                 this.PivotBreakValueSpecified = value.HasValue;
+            }
+        }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("PreCooling")]
+        public bool PreCoolingValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die PreCooling-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the PreCooling property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool PreCoolingValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> PreCooling
+        {
+            get
+            {
+                if (this.PreCoolingValueSpecified)
+                {
+                    return this.PreCoolingValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.PreCoolingValue = value.GetValueOrDefault();
+                this.PreCoolingValueSpecified = value.HasValue;
             }
         }
         
@@ -38424,9 +39110,9 @@ namespace CargoWiseNetLibrary.Models.Universal
         }
         
         /// <summary>
-        /// <para xml:lang="en">Maximum length: 260.</para>
+        /// <para xml:lang="en">Maximum length: 512.</para>
         /// </summary>
-        [MaxLengthAttribute(260)]
+        [MaxLengthAttribute(512)]
         [XmlElementAttribute("GoodsDescription")]
         public string GoodsDescription { get; set; }
         
@@ -42192,6 +42878,52 @@ namespace CargoWiseNetLibrary.Models.Universal
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
     [SerializableAttribute()]
+    [XmlTypeAttribute("ShipmentEDocsDocumentTrackingCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class ShipmentEDocsDocumentTrackingCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<DocumentTracking> _eDocsDocumentTracking;
+        
+        [XmlElementAttribute("EDocsDocumentTracking")]
+        public Collection<DocumentTracking> EDocsDocumentTracking
+        {
+            get
+            {
+                return _eDocsDocumentTracking;
+            }
+            set
+            {
+                _eDocsDocumentTracking = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EDocsDocumentTracking-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the EDocsDocumentTracking collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool EDocsDocumentTrackingSpecified
+        {
+            get
+            {
+                return ((this.EDocsDocumentTracking != null) 
+                            && (this.EDocsDocumentTracking.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="ShipmentEDocsDocumentTrackingCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="ShipmentEDocsDocumentTrackingCollection" /> class.</para>
+        /// </summary>
+        public ShipmentEDocsDocumentTrackingCollection()
+        {
+            this._eDocsDocumentTracking = new Collection<DocumentTracking>();
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
     [XmlTypeAttribute("ShipmentEmptyContainerCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
     public partial class ShipmentEmptyContainerCollection
     {
@@ -44225,6 +44957,7 @@ namespace CargoWiseNetLibrary.Models.Universal
             this._addInfoGroupCollection = new Collection<AddInfoGroup>();
             this._customsReferenceCollection = new Collection<CustomsReference>();
             this._customsSupportingInformationCollection = new Collection<CustomsSupportingInformation>();
+            this._entryNumberCollection = new Collection<EntryNumber>();
             this._locationOfGoodsCollection = new Collection<LocationOfGoods>();
             this._organizationAddressCollection = new Collection<OrganizationAddress>();
             this._sealNumberCollection = new Collection<SealNumber>();
@@ -44324,6 +45057,37 @@ namespace CargoWiseNetLibrary.Models.Universal
         }
         
         [XmlIgnoreAttribute()]
+        private Collection<EntryNumber> _entryNumberCollection;
+        
+        [XmlArrayAttribute("EntryNumberCollection")]
+        [XmlArrayItemAttribute("EntryNumber", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+        public Collection<EntryNumber> EntryNumberCollection
+        {
+            get
+            {
+                return _entryNumberCollection;
+            }
+            set
+            {
+                _entryNumberCollection = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EntryNumberCollection-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the EntryNumberCollection collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool EntryNumberCollectionSpecified
+        {
+            get
+            {
+                return ((this.EntryNumberCollection != null) 
+                            && (this.EntryNumberCollection.Count != 0));
+            }
+        }
+        
+        [XmlIgnoreAttribute()]
         private Collection<LocationOfGoods> _locationOfGoodsCollection;
         
         [XmlArrayAttribute("LocationOfGoodsCollection")]
@@ -44353,6 +45117,9 @@ namespace CargoWiseNetLibrary.Models.Universal
                             && (this.LocationOfGoodsCollection.Count != 0));
             }
         }
+        
+        [XmlElementAttribute("NoteCollection")]
+        public EntryInstructionNoteCollection NoteCollection { get; set; }
         
         [XmlIgnoreAttribute()]
         private Collection<OrganizationAddress> _organizationAddressCollection;
@@ -44901,6 +45668,130 @@ namespace CargoWiseNetLibrary.Models.Universal
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
     [SerializableAttribute()]
+    [XmlTypeAttribute("EntryInstructionEntryNumberCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class EntryInstructionEntryNumberCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<EntryNumber> _entryNumber;
+        
+        [XmlElementAttribute("EntryNumber")]
+        public Collection<EntryNumber> EntryNumber
+        {
+            get
+            {
+                return _entryNumber;
+            }
+            set
+            {
+                _entryNumber = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EntryNumber-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the EntryNumber collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool EntryNumberSpecified
+        {
+            get
+            {
+                return ((this.EntryNumber != null) 
+                            && (this.EntryNumber.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="EntryInstructionEntryNumberCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="EntryInstructionEntryNumberCollection" /> class.</para>
+        /// </summary>
+        public EntryInstructionEntryNumberCollection()
+        {
+            this._entryNumber = new Collection<EntryNumber>();
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
+    [XmlTypeAttribute("EntryNumber", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
+    public partial class EntryNumber
+    {
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 35.</para>
+        /// </summary>
+        [MaxLengthAttribute(35)]
+        [RequiredAttribute(AllowEmptyStrings=true)]
+        [XmlElementAttribute("Number")]
+        public string Number { get; set; }
+        
+        [RequiredAttribute(AllowEmptyStrings=true)]
+        [XmlElementAttribute("Type")]
+        public EntryType Type { get; set; }
+        
+        [XmlElementAttribute("CountryOfIssue")]
+        public Country CountryOfIssue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 3.</para>
+        /// </summary>
+        [MaxLengthAttribute(3)]
+        [XmlElementAttribute("Category")]
+        public string Category { get; set; }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlElementAttribute("EntryIsSystemGenerated")]
+        public bool EntryIsSystemGeneratedValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EntryIsSystemGenerated-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the EntryIsSystemGenerated property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool EntryIsSystemGeneratedValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<bool> EntryIsSystemGenerated
+        {
+            get
+            {
+                if (this.EntryIsSystemGeneratedValueSpecified)
+                {
+                    return this.EntryIsSystemGeneratedValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.EntryIsSystemGeneratedValue = value.GetValueOrDefault();
+                this.EntryIsSystemGeneratedValueSpecified = value.HasValue;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 50.</para>
+        /// </summary>
+        [MaxLengthAttribute(50)]
+        [XmlElementAttribute("EntryLineReference")]
+        public string EntryLineReference { get; set; }
+        
+        [XmlElementAttribute("EntryStatus")]
+        public EntryStatus EntryStatus { get; set; }
+        
+        [XmlElementAttribute("ExpiryDate")]
+        public string ExpiryDate { get; set; }
+        
+        [XmlElementAttribute("IssueDate")]
+        public string IssueDate { get; set; }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
     [XmlTypeAttribute("EntryInstructionLocationOfGoodsCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
     public partial class EntryInstructionLocationOfGoodsCollection
     {
@@ -45074,6 +45965,85 @@ namespace CargoWiseNetLibrary.Models.Universal
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
     [SerializableAttribute()]
+    [XmlTypeAttribute("EntryInstructionNoteCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class EntryInstructionNoteCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<Note> _note;
+        
+        [XmlElementAttribute("Note")]
+        public Collection<Note> Note
+        {
+            get
+            {
+                return _note;
+            }
+            set
+            {
+                _note = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die Note-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the Note collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool NoteSpecified
+        {
+            get
+            {
+                return ((this.Note != null) 
+                            && (this.Note.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="EntryInstructionNoteCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="EntryInstructionNoteCollection" /> class.</para>
+        /// </summary>
+        public EntryInstructionNoteCollection()
+        {
+            this._note = new Collection<Note>();
+        }
+        
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        [XmlAttributeAttribute("Content")]
+        public CollectionContent ContentValue { get; set; }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die Content-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
+        /// <para xml:lang="en">Gets or sets a value indicating whether the Content property is specified.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
+        public bool ContentValueSpecified { get; set; }
+        
+        [XmlIgnoreAttribute()]
+        public Nullable<CollectionContent> Content
+        {
+            get
+            {
+                if (this.ContentValueSpecified)
+                {
+                    return this.ContentValue;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                this.ContentValue = value.GetValueOrDefault();
+                this.ContentValueSpecified = value.HasValue;
+            }
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
     [XmlTypeAttribute("EntryInstructionOrganizationAddressCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
     public partial class EntryInstructionOrganizationAddressCollection
     {
@@ -45208,84 +46178,6 @@ namespace CargoWiseNetLibrary.Models.Universal
         {
             this._entryNumber = new Collection<EntryNumber>();
         }
-    }
-    
-    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
-    [SerializableAttribute()]
-    [XmlTypeAttribute("EntryNumber", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11")]
-    public partial class EntryNumber
-    {
-        
-        /// <summary>
-        /// <para xml:lang="en">Maximum length: 35.</para>
-        /// </summary>
-        [MaxLengthAttribute(35)]
-        [RequiredAttribute(AllowEmptyStrings=true)]
-        [XmlElementAttribute("Number")]
-        public string Number { get; set; }
-        
-        [RequiredAttribute(AllowEmptyStrings=true)]
-        [XmlElementAttribute("Type")]
-        public EntryType Type { get; set; }
-        
-        [XmlElementAttribute("CountryOfIssue")]
-        public Country CountryOfIssue { get; set; }
-        
-        /// <summary>
-        /// <para xml:lang="en">Maximum length: 3.</para>
-        /// </summary>
-        [MaxLengthAttribute(3)]
-        [XmlElementAttribute("Category")]
-        public string Category { get; set; }
-        
-        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
-        [XmlElementAttribute("EntryIsSystemGenerated")]
-        public bool EntryIsSystemGeneratedValue { get; set; }
-        
-        /// <summary>
-        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die EntryIsSystemGenerated-Eigenschaft spezifiziert ist, oder legt diesen fest.</para>
-        /// <para xml:lang="en">Gets or sets a value indicating whether the EntryIsSystemGenerated property is specified.</para>
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [EditorBrowsableAttribute(EditorBrowsableState.Never)]
-        public bool EntryIsSystemGeneratedValueSpecified { get; set; }
-        
-        [XmlIgnoreAttribute()]
-        public Nullable<bool> EntryIsSystemGenerated
-        {
-            get
-            {
-                if (this.EntryIsSystemGeneratedValueSpecified)
-                {
-                    return this.EntryIsSystemGeneratedValue;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            set
-            {
-                this.EntryIsSystemGeneratedValue = value.GetValueOrDefault();
-                this.EntryIsSystemGeneratedValueSpecified = value.HasValue;
-            }
-        }
-        
-        /// <summary>
-        /// <para xml:lang="en">Maximum length: 50.</para>
-        /// </summary>
-        [MaxLengthAttribute(50)]
-        [XmlElementAttribute("EntryLineReference")]
-        public string EntryLineReference { get; set; }
-        
-        [XmlElementAttribute("EntryStatus")]
-        public EntryStatus EntryStatus { get; set; }
-        
-        [XmlElementAttribute("ExpiryDate")]
-        public string ExpiryDate { get; set; }
-        
-        [XmlElementAttribute("IssueDate")]
-        public string IssueDate { get; set; }
     }
     
     [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
@@ -49356,9 +50248,9 @@ namespace CargoWiseNetLibrary.Models.Universal
         public string SlotDate { get; set; }
         
         /// <summary>
-        /// <para xml:lang="en">Maximum length: 20.</para>
+        /// <para xml:lang="en">Maximum length: 35.</para>
         /// </summary>
-        [MaxLengthAttribute(20)]
+        [MaxLengthAttribute(35)]
         [XmlElementAttribute("SlotReference")]
         public string SlotReference { get; set; }
         
@@ -49965,8 +50857,12 @@ namespace CargoWiseNetLibrary.Models.Universal
     public partial class MNRWorkOrderLine
     {
         
+        /// <summary>
+        /// <para xml:lang="en">Maximum length: 10.</para>
+        /// </summary>
+        [MaxLengthAttribute(10)]
         [XmlElementAttribute("ComponentCode")]
-        public CodeGroupPair ComponentCode { get; set; }
+        public string ComponentCode { get; set; }
         
         [XmlElementAttribute("Damage")]
         public CodeGroupPair Damage { get; set; }
@@ -50900,6 +51796,52 @@ namespace CargoWiseNetLibrary.Models.Universal
         public ShipmentRelatedShipmentCollection()
         {
             this._relatedShipment = new Collection<Shipment>();
+        }
+    }
+    
+    [GeneratedCodeAttribute("XmlSchemaClassGenerator", "2.1.1183.0")]
+    [SerializableAttribute()]
+    [XmlTypeAttribute("ShipmentRequestCollection", Namespace="http://www.cargowise.com/Schemas/Universal/2011/11", AnonymousType=true)]
+    public partial class ShipmentRequestCollection
+    {
+        
+        [XmlIgnoreAttribute()]
+        private Collection<WorkflowRequest> _request;
+        
+        [XmlElementAttribute("Request")]
+        public Collection<WorkflowRequest> Request
+        {
+            get
+            {
+                return _request;
+            }
+            set
+            {
+                _request = value;
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Ruft einen Wert ab, der angibt, ob die Request-Collection leer ist.</para>
+        /// <para xml:lang="en">Gets a value indicating whether the Request collection is empty.</para>
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        public bool RequestSpecified
+        {
+            get
+            {
+                return ((this.Request != null) 
+                            && (this.Request.Count != 0));
+            }
+        }
+        
+        /// <summary>
+        /// <para xml:lang="de">Initialisiert eine neue Instanz der <see cref="ShipmentRequestCollection" /> Klasse.</para>
+        /// <para xml:lang="en">Initializes a new instance of the <see cref="ShipmentRequestCollection" /> class.</para>
+        /// </summary>
+        public ShipmentRequestCollection()
+        {
+            this._request = new Collection<WorkflowRequest>();
         }
     }
     

@@ -2,27 +2,10 @@
 
 <#
 .SYNOPSIS
-    Fixes NativeBody collections to use correct wrapper types instead of CriteriaGroupType.
-
-.DESCRIPTION
-    Post-processes generated Native.cs file to replace Collection<CriteriaGroupType> with
-    the correct wrapper types (ProductData, OrganizationData, etc.) while preserving the
-    Any collection as a fallback for new CargoWise entity types.
-
-    Can auto-detect the file if given a directory path.
+    Fixes NativeBody collections - SMART version that uses context.
 
 .PARAMETER FilePath
-    Path to the Native.cs file to fix, or path to directory containing it.
-
-.EXAMPLE
-    .\Fix-NativeBody.ps1 -FilePath ".\Models\Native.cs"
-
-.EXAMPLE
-    .\Fix-NativeBody.ps1 -FilePath ".\Models"
-    # Auto-detects Native.cs or CargoWiseNetLibrary.Models.Native.cs
-
-.EXAMPLE
-    .\Fix-NativeBody.ps1 "C:\Project\Models\Native.cs"
+    Path to the Native.cs file to fix.
 #>
 
 [CmdletBinding()]
@@ -31,129 +14,163 @@ param(
     [string]$FilePath
 )
 
-$TypeMappings = @(
-    @{ Collection = 'Product'; Type = 'ProductData' }
-    @{ Collection = 'Organization'; Type = 'OrganizationData' }
-    @{ Collection = 'Company'; Type = 'CompanyData' }
-    @{ Collection = 'Container'; Type = 'ContainerData' }
-    @{ Collection = 'Country'; Type = 'CountryData' }
-    @{ Collection = 'Airline'; Type = 'AirlineData' }
-    @{ Collection = 'Vessel'; Type = 'VesselData' }
-    @{ Collection = 'Rate'; Type = 'RateData' }
-    @{ Collection = 'Staff'; Type = 'StaffData' }
-    @{ Collection = 'Tag'; Type = 'TagData' }
-    @{ Collection = 'TagRule'; Type = 'TagRuleData' }
-    @{ Collection = 'CommodityCode'; Type = 'CommodityCodeData' }
-    @{ Collection = 'DangerousGood'; Type = 'DangerousGoodData' }
-    @{ Collection = 'ServiceLevel'; Type = 'ServiceLevelData' }
-    @{ Collection = 'UNLOCO'; Type = 'UNLOCOData' }
-    @{ Collection = 'CurrencyExchangeRate'; Type = 'CurrencyExchangeRateData' }
-    @{ Collection = 'CusStatement'; Type = 'CusStatementData' }
-    @{ Collection = 'BMSystem'; Type = 'BMSystemData' }
-    @{ Collection = 'AcceptabilityBand'; Type = 'AcceptabilityBandData' }
-    @{ Collection = 'WorkflowTemplate'; Type = 'WorkflowTemplateData' }
-)
+if (-not (Test-Path $FilePath)) {
+    Write-Host "Error: File not found: $FilePath" -ForegroundColor Red
+    exit 1
+}
+
+$TypeMappings = @{
+    'Product' = 'ProductData'
+    'Organization' = 'OrganizationData'
+    'Company' = 'CompanyData'
+    'Container' = 'ContainerData'
+    'Country' = 'CountryData'
+    'Airline' = 'AirlineData'
+    'Vessel' = 'VesselData'
+    'Rate' = 'RateData'
+    'Staff' = 'StaffData'
+    'Tag' = 'TagData'
+    'TagRule' = 'TagRuleData'
+    'CommodityCode' = 'CommodityCodeData'
+    'DangerousGood' = 'DangerousGoodData'
+    'ServiceLevel' = 'ServiceLevelData'
+    'UNLOCO' = 'UNLOCOData'
+    'CurrencyExchangeRate' = 'CurrencyExchangeRateData'
+    'CusStatement' = 'CusStatementData'
+    'BMSystem' = 'BMSystemData'
+    'AcceptabilityBand' = 'AcceptabilityBandData'
+    'WorkflowTemplate' = 'WorkflowTemplateData'
+}
 
 $Namespace = 'http://www.cargowise.com/Schemas/Native/2011/11'
 
 function Convert-ToCamelCase {
-    param([string]$PascalCase)
-
-    if ([string]::IsNullOrEmpty($PascalCase)) {
-        return $PascalCase
-    }
-
-    return $PascalCase.Substring(0, 1).ToLowerInvariant() + $PascalCase.Substring(1)
-}
-
-# Auto-detect file if directory is provided
-if (Test-Path $FilePath -PathType Container) {
-    Write-Host "Directory provided, searching for Native file..." -ForegroundColor Cyan
-
-    # Try to find Native.cs or CargoWiseNetLibrary.Models.Native.cs
-    $possibleFiles = @(
-        Join-Path $FilePath "Native.cs"
-        Join-Path $FilePath "CargoWiseNetLibrary.Models.Native.cs"
-    )
-
-    $foundFile = $possibleFiles | Where-Object { Test-Path $_ } | Select-Object -First 1
-
-    if ($foundFile) {
-        Write-Host "  Found: $(Split-Path $foundFile -Leaf)" -ForegroundColor Green
-        $FilePath = $foundFile
-    } else {
-        Write-Host "  Error: Could not find Native.cs or CargoWiseNetLibrary.Models.Native.cs in directory" -ForegroundColor Red
-        Write-Host "  Searched for:" -ForegroundColor Yellow
-        foreach ($file in $possibleFiles) {
-            Write-Host "    - $(Split-Path $file -Leaf)" -ForegroundColor Yellow
-        }
-        exit 1
-    }
-} elseif (-not (Test-Path $FilePath -PathType Leaf)) {
-    Write-Host "Error: File not found: $FilePath" -ForegroundColor Red
-    exit 1
+    param([string]$str)
+    return $str.Substring(0, 1).ToLowerInvariant() + $str.Substring(1)
 }
 
 Write-Host "Processing: $(Split-Path $FilePath -Leaf)" -ForegroundColor Cyan
 
 $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
-$originalContent = $content
 $changeCount = 0
 
-foreach ($mapping in $TypeMappings) {
-    $collection = $mapping.Collection
-    $type = $mapping.Type
-    $camelCase = Convert-ToCamelCase -PascalCase $collection
+# PASS 1: Fix fields, properties, and constructors
+Write-Host "Pass 1: Fixing fields, properties, and constructors..." -ForegroundColor Cyan
 
-    # Fix private field declaration
-    $privateFieldPattern = "private Collection<CriteriaGroupType> _$camelCase;"
-    $privateFieldReplacement = "private Collection<$type> _$camelCase;"
+foreach ($collectionName in $TypeMappings.Keys) {
+    $wrapperType = $TypeMappings[$collectionName]
+    $camelCase = Convert-ToCamelCase -str $collectionName
 
-    if ($content -match [regex]::Escape($privateFieldPattern)) {
-        $content = $content -replace [regex]::Escape($privateFieldPattern), $privateFieldReplacement
+    # 1. Fix private field
+    $oldField = "private Collection<CriteriaGroupType> _$camelCase;"
+    $newField = "private Collection<$wrapperType> _$camelCase;"
+    if ($content.Contains($oldField)) {
+        $content = $content.Replace($oldField, $newField)
         $changeCount++
-        Write-Verbose "Fixed private field: _$camelCase"
     }
 
-    # Fix public property type
-    $propertyPattern = "public Collection<CriteriaGroupType> $collection"
-    $propertyReplacement = "public Collection<$type> $collection"
-
-    if ($content -match [regex]::Escape($propertyPattern)) {
-        $content = $content -replace [regex]::Escape($propertyPattern), $propertyReplacement
+    # 2. Fix public property
+    $oldProp = "public Collection<CriteriaGroupType> $collectionName"
+    $newProp = "public Collection<$wrapperType> $collectionName"
+    if ($content.Contains($oldProp)) {
+        $content = $content.Replace($oldProp, $newProp)
         $changeCount++
-        Write-Verbose "Fixed property: $collection"
     }
 
-    # Fix XmlArrayItemAttribute - match both CriteriaGroup and potential partial fixes
-    # Pattern 1: Full wrong pattern (CriteriaGroup + CriteriaGroupType)
-    $xmlAttrPattern1 = "\[XmlArrayItemAttribute\(`"CriteriaGroup`", Namespace=`"http://www\.cargowise\.com/Schemas/Native`"\)\]\s+public Collection<CriteriaGroupType> $collection"
-
-    # Pattern 2: Partial fix (CriteriaGroup attribute but correct type)
-    $xmlAttrPattern2 = "\[XmlArrayItemAttribute\(`"CriteriaGroup`", Namespace=`"http://www\.cargowise\.com/Schemas/Native`"\)\]\s+public Collection<$type> $collection"
-
-    # Pattern 3: Wrong namespace with correct or wrong type
-    $xmlAttrPattern3 = "\[XmlArrayItemAttribute\(`"CriteriaGroup`", Namespace=`"[^`"]+`"\)\]\s+public Collection<[^>]+> $collection"
-
-    $xmlAttrReplacement = "[XmlArrayItemAttribute(`"$type`", Namespace=`"$Namespace`")]`r`n        public Collection<$type> $collection"
-
-    $matched = $false
-    foreach ($pattern in @($xmlAttrPattern1, $xmlAttrPattern2, $xmlAttrPattern3)) {
-        if ($content -match $pattern) {
-            $content = $content -replace $pattern, $xmlAttrReplacement
-            $changeCount++
-            Write-Verbose "Fixed XmlArrayItemAttribute: $collection"
-            $matched = $true
-            break
-        }
+    # 3. Fix constructor
+    $oldCtor = "this._$camelCase = new Collection<CriteriaGroupType>();"
+    $newCtor = "this._$camelCase = new Collection<$wrapperType>();"
+    if ($content.Contains($oldCtor)) {
+        $content = $content.Replace($oldCtor, $newCtor)
+        $changeCount++
     }
 }
 
-if ($content -ne $originalContent) {
-    $content | Set-Content -Path $FilePath -Encoding UTF8 -NoNewline
-    Write-Host "✓ Fixed $changeCount type references in $(Split-Path $FilePath -Leaf)" -ForegroundColor Green
-    exit 0
-} else {
-    Write-Host "ℹ No changes needed in $(Split-Path $FilePath -Leaf)" -ForegroundColor Yellow
-    exit 0
+# PASS 2: Fix XmlArrayItemAttribute by looking at the property type that follows it
+Write-Host "Pass 2: Fixing XmlArrayItemAttribute..." -ForegroundColor Cyan
+
+$badAttr = '[XmlArrayItemAttribute("CriteriaGroup", Namespace="http://www.cargowise.com/Schemas/Native")]'
+$searchPos = 0
+
+while (($searchPos = $content.IndexOf($badAttr, $searchPos)) -ge 0) {
+    # Found a bad attribute - look ahead to find the property
+    # Look for: public Collection<WrapperType>
+    $lookAheadStart = $searchPos + $badAttr.Length
+    $lookAheadEnd = [Math]::Min($lookAheadStart + 200, $content.Length)
+    $lookAheadText = $content.Substring($lookAheadStart, $lookAheadEnd - $lookAheadStart)
+
+    # Extract the wrapper type from "public Collection<WrapperType>"
+    if ($lookAheadText -match 'public Collection<(\w+)>') {
+        $wrapperType = $matches[1]
+
+        # Replace this specific occurrence
+        $newAttr = "[XmlArrayItemAttribute(`"$wrapperType`", Namespace=`"$Namespace`")]"
+        $content = $content.Remove($searchPos, $badAttr.Length)
+        $content = $content.Insert($searchPos, $newAttr)
+
+        $changeCount++
+        Write-Verbose "Fixed attribute -> $wrapperType"
+
+        # Move past this replacement
+        $searchPos = $searchPos + $newAttr.Length
+    } else {
+        # Couldn't find property, skip this one
+        $searchPos = $searchPos + $badAttr.Length
+    }
 }
+
+# PASS 3: Fix Tag/TagRule swap (using regex for robustness)
+Write-Host "Pass 3: Checking for Tag/TagRule swap..." -ForegroundColor Cyan
+
+# Fix private fields
+if ($content -match 'private\s+Collection<TagRuleData>\s+_tag;') {
+    Write-Host "Detected _tag field with wrong type, fixing..." -ForegroundColor Yellow
+    $content = $content -replace 'private\s+Collection<TagRuleData>\s+_tag;', 'private Collection<TagData> _tag;'
+    $changeCount++
+    Write-Host "Fixed _tag field declaration" -ForegroundColor Green
+}
+
+if ($content -match 'private\s+Collection<TagData>\s+_tagRule;') {
+    Write-Host "Detected _tagRule field with wrong type, fixing..." -ForegroundColor Yellow
+    $content = $content -replace 'private\s+Collection<TagData>\s+_tagRule;', 'private Collection<TagRuleData> _tagRule;'
+    $changeCount++
+    Write-Host "Fixed _tagRule field declaration" -ForegroundColor Green
+}
+
+# Fix property declarations
+if ($content -match 'public\s+Collection<TagRuleData>\s+Tag\s') {
+    Write-Host "Detected Tag property with wrong type, fixing..." -ForegroundColor Yellow
+    $content = $content -replace 'public\s+Collection<TagRuleData>\s+Tag\s', 'public Collection<TagData> Tag '
+    $changeCount++
+    Write-Host "Fixed Tag property declaration" -ForegroundColor Green
+}
+
+if ($content -match 'public\s+Collection<TagData>\s+TagRule\s') {
+    Write-Host "Detected TagRule property with wrong type, fixing..." -ForegroundColor Yellow
+    $content = $content -replace 'public\s+Collection<TagData>\s+TagRule\s', 'public Collection<TagRuleData> TagRule '
+    $changeCount++
+    Write-Host "Fixed TagRule property declaration" -ForegroundColor Green
+}
+
+# Fix constructor
+if ($content -match 'this\._tag\s*=\s*new\s+Collection<TagRuleData>\(\s*\)\s*;') {
+    Write-Host "Detected Tag constructor with wrong type, fixing..." -ForegroundColor Yellow
+    $content = $content -replace 'this\._tag\s*=\s*new\s+Collection<TagRuleData>\(\s*\)\s*;', 'this._tag = new Collection<TagData>();'
+    $changeCount++
+    Write-Host "Fixed Tag constructor" -ForegroundColor Green
+}
+
+if ($content -match 'this\._tagRule\s*=\s*new\s+Collection<TagData>\(\s*\)\s*;') {
+    Write-Host "Detected TagRule constructor with wrong type, fixing..." -ForegroundColor Yellow
+    $content = $content -replace 'this\._tagRule\s*=\s*new\s+Collection<TagData>\(\s*\)\s*;', 'this._tagRule = new Collection<TagRuleData>();'
+    $changeCount++
+    Write-Host "Fixed TagRule constructor" -ForegroundColor Green
+}
+
+# Save the file
+Set-Content -Path $FilePath -Value $content -Encoding UTF8 -NoNewline
+
+$fileName = Split-Path $FilePath -Leaf
+Write-Host "Fixed $changeCount type references in $fileName" -ForegroundColor Green
+
+exit 0
