@@ -3,7 +3,7 @@
 [![NuGet](https://img.shields.io/nuget/v/CargoWiseNetLibrary.svg)](https://www.nuget.org/packages/CargoWiseNetLibrary/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
-[![Models Updated](https://img.shields.io/badge/Models_Updated-November_16_2025-brightgreen)](SCHEMA_GENERATION.md)
+[![Models Updated](https://img.shields.io/badge/Models_Updated-December_28_2025)](SCHEMA_GENERATION.md)
 
 A comprehensive .NET 8 library for CargoWise EDI integration, including C# models generated from CargoWise XSD schemas with advanced serialization, validation, and helper utilities.
 
@@ -125,7 +125,7 @@ if (interchange.HasData())
 
 ### Model Generation Status
 
-- **Last Updated**: November 16, 2025
+- **Last Updated**: December 28 2025
 - **Schema Version**: CargoWise Universal and Native EDI Schemas
 - **Generation Tool**: [Chizaruu.NetTools.SchemaGenerator](https://github.com/Chizaruu/Chizaruu.NetTools) (built on XmlSchemaClassGenerator v2.1.1183.0)
 - **Models Included**:

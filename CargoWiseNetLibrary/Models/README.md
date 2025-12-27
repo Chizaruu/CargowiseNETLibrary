@@ -1,6 +1,6 @@
 # Auto-generated Models
 
-[![Models Updated](https://img.shields.io/badge/Models_Updated-December_26_2025)](../SCHEMA_GENERATION.md)
+[![Models Updated](https://img.shields.io/badge/Models_Updated-December_28_2025)](../SCHEMA_GENERATION.md)
 [![Schema Generator](https://img.shields.io/badge/Generator-Chizaruu.NetTools-blue)](https://github.com/Chizaruu/Chizaruu.NetTools)
 [![Authorization Required](https://img.shields.io/badge/Authorization-Required-red)](../LEGAL.md)
 [![.NET](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/download/dotnet/8.0)
@@ -22,7 +22,7 @@ See [LEGAL.md](../LEGAL.md) for complete legal information.
 
 ## Generation Information
 
-- **Last Generated**: December 26 2025
+- **Last Generated**: December 28 2025
 - **Generation Method**: Automated via `generate-models.bat`
 - **Schema Source**: CargoWise EDI Messaging (Authorized Access Only)
 - **Generator Tool**: [Chizaruu.NetTools.SchemaGenerator](https://github.com/Chizaruu/Chizaruu.NetTools)
@@ -498,6 +498,20 @@ For questions or issues:
 ---
 
 _This file is automatically updated during model regeneration. The "Last Generated" date and "Models Updated" badge are automatically updated by `generate-models.bat`._
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
