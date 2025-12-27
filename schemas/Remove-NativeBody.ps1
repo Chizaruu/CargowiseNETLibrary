@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-    Removes NativeBody class from Native.cs (using handwritten version instead).
+    Normalizes namespaces and removes NativeBody class from Native.cs.
 
 .PARAMETER FilePath
     Path to the Native.cs file.
@@ -19,11 +19,20 @@ if (-not (Test-Path $FilePath)) {
     exit 1
 }
 
-Write-Host "Removing generated NativeBody from Native.cs..." -ForegroundColor Cyan
+Write-Host "Processing Native.cs..." -ForegroundColor Cyan
 
-$content = Get-Content -Path $FilePath -Raw -Encoding UTF8
+# Read file content
+$content = [System.IO.File]::ReadAllText($FilePath)
 
-# Find all NativeBody class occurrences and remove them
+# Step 1: Normalize namespaces
+Write-Host "  Normalizing namespaces..." -ForegroundColor Gray
+$content = $content.Replace(
+    'Namespace="http://www.cargowise.com/Schemas/Native"]',
+    'Namespace="http://www.cargowise.com/Schemas/Native/2011/11"]'
+)
+
+# Step 2: Remove all NativeBody classes
+Write-Host "  Removing NativeBody classes..." -ForegroundColor Gray
 $removedCount = 0
 
 while ($true) {
@@ -33,7 +42,6 @@ while ($true) {
     $braceStart = $content.IndexOf('{', $classStart)
     if ($braceStart -lt 0) { break }
 
-    # Count braces to find class end
     $depth = 0
     $classEnd = -1
     for ($i = $braceStart; $i -lt $content.Length; $i++) {
@@ -49,28 +57,23 @@ while ($true) {
 
     if ($classEnd -lt 0) { break }
 
-    # Find attribute start (go back to find [GeneratedCodeAttribute...)
     $attrStart = $content.LastIndexOf('[GeneratedCodeAttribute', $classStart)
     if ($attrStart -lt 0 -or ($classStart - $attrStart) -gt 500) {
         $attrStart = $classStart
     }
 
-    # Also check for preceding blank lines
     while ($attrStart -gt 0 -and $content[$attrStart - 1] -match '[\r\n\s]') {
         $attrStart--
     }
 
-    # Remove the class
     $content = $content.Substring(0, $attrStart) + $content.Substring($classEnd)
     $removedCount++
-    Write-Host "  Removed NativeBody occurrence #$removedCount" -ForegroundColor Green
 }
 
-if ($removedCount -eq 0) {
-    Write-Host "  No NativeBody class found" -ForegroundColor Yellow
-} else {
-    Set-Content -Path $FilePath -Value $content -Encoding UTF8 -NoNewline
-    Write-Host "Removed $removedCount NativeBody class(es)" -ForegroundColor Green
-}
+Write-Host "  Removed $removedCount NativeBody class(es)" -ForegroundColor Green
+
+# Write file
+[System.IO.File]::WriteAllText($FilePath, $content)
+Write-Host "Done" -ForegroundColor Green
 
 exit 0

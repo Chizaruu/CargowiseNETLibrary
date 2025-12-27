@@ -711,3 +711,7 @@ See [LEGAL.md](LEGAL.md) for complete legal information and disclaimers.
 
 **Author**: Chizaruu
 Made with ❤️ for the logistics and freight forwarding community
+
+
+
+

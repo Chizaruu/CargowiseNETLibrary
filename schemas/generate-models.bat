@@ -69,7 +69,7 @@ powershell -Command "Get-ChildItem -Path '%OUTPUT_DIR%' -Filter *.cs | ForEach-O
 echo.
 
 echo ========================================
-echo STEP 3: Remove Generated NativeBody
+echo STEP 3: Fix Native.cs
 echo ========================================
 echo.
 
@@ -77,7 +77,15 @@ powershell -ExecutionPolicy Bypass -File "%BATCH_DIR%\Remove-NativeBody.ps1" -Fi
 echo.
 
 echo ========================================
-echo STEP 4: Copy Handwritten Files
+echo STEP 4: Merge Duplicate Classes
+echo ========================================
+echo.
+
+class-merger "%OUTPUT_DIR%\Native.cs"
+echo.
+
+echo ========================================
+echo STEP 5: Copy Handwritten Files
 echo ========================================
 echo.
 
@@ -85,7 +93,7 @@ copy /Y "%BATCH_DIR%\handwritten\NativeBody.cs" "%OUTPUT_DIR%\NativeBody.cs"
 echo.
 
 echo ========================================
-echo STEP 5: Update READMEs
+echo STEP 6: Update READMEs
 echo ========================================
 echo.
 
